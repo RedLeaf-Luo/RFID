@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.RfidMapper" >
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.Rfid" >
+    <id column="rfid_id" property="rfidId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="rfid_add_time" property="rfidAddTime" jdbcType="TIMESTAMP" />
+    <result column="state" property="state" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    rfid_id, user_id, rfid_add_time, state
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.RfidExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from rfid
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from rfid
+    where rfid_id = #{rfidId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from rfid
+    where rfid_id = #{rfidId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.RfidExample" >
+    delete from rfid
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.bulb.rfid.entity.Rfid" >
+    insert into rfid (rfid_id, user_id, rfid_add_time, 
+      state)
+    values (#{rfidId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{rfidAddTime,jdbcType=TIMESTAMP}, 
+      #{state,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.Rfid" >
+    insert into rfid
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="rfidId != null" >
+        rfid_id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="rfidAddTime != null" >
+        rfid_add_time,
+      </if>
+      <if test="state != null" >
+        state,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="rfidId != null" >
+        #{rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="rfidAddTime != null" >
+        #{rfidAddTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        #{state,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.RfidExample" resultType="java.lang.Integer" >
+    select count(*) from rfid
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update rfid
+    <set >
+      <if test="record.rfidId != null" >
+        rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userId != null" >
+        user_id = #{record.userId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.rfidAddTime != null" >
+        rfid_add_time = #{record.rfidAddTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.state != null" >
+        state = #{record.state,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update rfid
+    set rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      user_id = #{record.userId,jdbcType=VARCHAR},
+      rfid_add_time = #{record.rfidAddTime,jdbcType=TIMESTAMP},
+      state = #{record.state,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bulb.rfid.entity.Rfid" >
+    update rfid
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="rfidAddTime != null" >
+        rfid_add_time = #{rfidAddTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="state != null" >
+        state = #{state,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where rfid_id = #{rfidId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bulb.rfid.entity.Rfid" >
+    update rfid
+    set user_id = #{userId,jdbcType=VARCHAR},
+      rfid_add_time = #{rfidAddTime,jdbcType=TIMESTAMP},
+      state = #{state,jdbcType=VARCHAR}
+    where rfid_id = #{rfidId,jdbcType=VARCHAR}
+  </update>
+  
+   <!-- 根据rfid修改rfid状态 -->
+  <update id="updateStateByRfidId" parameterType="String">
+  	  	 update rfid
+    	set state = "OFF"
+   		 where rfid_id = #{rfidId,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- ======================================================================== -->
+  <!-- 修改字段 -->
+	<sql id="rfidUpdate">
+		<set>
+			<if test="userId != null and userId != ''">
+				user_id=#{userId},
+			</if>
+			<if test="state != null and state != ''">
+				state=#{state},
+			</if>
+			<if test="rfidAddTime != null and rfidAddTime != ''">
+				rfid_add_time=#{rfidAddTime},
+			</if>
+		</set>
+	</sql>
+	
+	<resultMap type="rfid" id="RfidResultMap">
+		<id property="rfidId"	column="rfid_id"/>
+		<result property="userId" column="user_id"/>
+		<result property="state" column="state"/>
+		<result property="rfidAddTime" column="rfid_add_time"/>
+	</resultMap>
+	
+<!-- 根据id获取rfid信息	String getRfid(String rfidId); -->
+
+	<select id="getRfid" parameterType="java.lang.String" resultMap="RfidResultMap">
+		SELECT * from rfid where rfid_id = #{rfidId}
+	</select>
+	
+<!-- 查找状态为off的rfid	List<Rfid> getRfidListByOff(); -->
+	<select id="getRfidListByOff" resultMap="RfidResultMap">
+		select rfid_id,user_id from rfid where state = 'off' 
+	</select>
+
+<!--  修改rfid信息	void rfidUpdate(Rfid rfid); -->
+	<update id="rfidUpdate" parameterType="rfid">
+			update rfid 
+			<include refid="rfidUpdate"/>
+			where rfid_id = #{rfidId}
+	</update>
+</mapper>

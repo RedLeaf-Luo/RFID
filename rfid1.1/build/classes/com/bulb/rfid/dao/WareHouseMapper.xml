@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.WareHouseMapper" >
+	
+	<!-- 多对多关联:映射实体类和字段之间的一一对应的关系 -->
+    <resultMap id="UserWareHouseMap" type="WareHouse">
+        <id column="ware_house_id" property="wareHouseId" jdbcType="VARCHAR" />
+    	<result column="ware_house_name" property="wareHouseName" jdbcType="VARCHAR" />
+   		<result column="ware_house_address" property="wareHouseAddress" jdbcType="VARCHAR" />
+    	<result column="ware_house_add_time" property="wareHouseAddTime" jdbcType="TIMESTAMP" />
+        <!-- 多对多关联映射：collection -->
+        <collection property="users" ofType="User">
+            <id column="user_id" property="userId" jdbcType="VARCHAR" />
+    		<result column="user_account" property="userAccount" jdbcType="VARCHAR" />
+    		<result column="user_password" property="userPassword" jdbcType="VARCHAR" />
+    		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+    		<result column="user_phone" property="userPhone" jdbcType="VARCHAR" />
+    		<result column="add_time" property="addTime" jdbcType="TIMESTAMP" />
+        </collection>
+    </resultMap>
+	
+	<!-- 通过仓库名字找负责人名字  -->
+	<select id="selectUserByWareHouseName" parameterType="String" resultType="String">
+        select u.user_name from user u,ware_house w,user_ware_house uw
+        	where u.user_id=uw.user_id
+      			and w.ware_house_id=uw.ware_house_id
+      				and w.ware_house_name=#{wareHouseName}
+    </select>
+    
+	<!-- 根据仓库ID查询仓库详情 -->
+	<select id="selectWareHouseInfoById" parameterType="String" resultMap="UserWareHouseMap">
+        select u.*,w.* from user u,ware_house w,user_ware_house uw
+        	where u.user_id=uw.user_id
+      			and w.ware_house_id=uw.ware_house_id
+      				and w.ware_house_id=#{wareHouseId}
+    </select>
+	
+	<!-- 根据仓库名字模糊查询仓库列表 -->
+	<select id="selectWareHouseByName" parameterType="String" resultMap="UserWareHouseMap">
+        select u.*,w.* from user u,ware_house w,user_ware_house uw
+        	where u.user_id=uw.user_id
+      			and w.ware_house_id=uw.ware_house_id
+      				and w.ware_house_name like "%"#{wareHouseName}"%"
+      					order by w.ware_house_add_time desc
+    </select>
+    
+	<!-- 查询所有仓库列表 -->
+	<select id="selectAllWareHouse" resultMap="UserWareHouseMap">
+        select u.*,w.* from user u,ware_house w,user_ware_house uw
+        	where u.user_id=uw.user_id
+      			and w.ware_house_id=uw.ware_house_id
+      				order by w.ware_house_add_time desc
+    </select>
+	
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.WareHouse" >
+    <id column="ware_house_id" property="wareHouseId" jdbcType="VARCHAR" />
+    <result column="ware_house_name" property="wareHouseName" jdbcType="VARCHAR" />
+    <result column="ware_house_address" property="wareHouseAddress" jdbcType="VARCHAR" />
+    <result column="ware_house_add_time" property="wareHouseAddTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    ware_house_id, ware_house_name, ware_house_address, ware_house_add_time
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.WareHouseExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from ware_house
+    where ware_house_id = #{wareHouseId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from ware_house
+    where ware_house_id = #{wareHouseId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.WareHouseExample" >
+    delete from ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.bulb.rfid.entity.WareHouse" >
+    insert into ware_house (ware_house_id, ware_house_name, ware_house_address, 
+      ware_house_add_time)
+    values (#{wareHouseId,jdbcType=VARCHAR}, #{wareHouseName,jdbcType=VARCHAR}, #{wareHouseAddress,jdbcType=VARCHAR}, 
+      #{wareHouseAddTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.WareHouse" >
+    insert into ware_house
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="wareHouseId != null" >
+        ware_house_id,
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name,
+      </if>
+      <if test="wareHouseAddress != null" >
+        ware_house_address,
+      </if>
+      <if test="wareHouseAddTime != null" >
+        ware_house_add_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="wareHouseId != null" >
+        #{wareHouseId,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseAddress != null" >
+        #{wareHouseAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseAddTime != null" >
+        #{wareHouseAddTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.WareHouseExample" resultType="java.lang.Integer" >
+    select count(*) from ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update ware_house
+    <set >
+      <if test="record.wareHouseId != null" >
+        ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseName != null" >
+        ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseAddress != null" >
+        ware_house_address = #{record.wareHouseAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseAddTime != null" >
+        ware_house_add_time = #{record.wareHouseAddTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update ware_house
+    set ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR},
+      ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      ware_house_address = #{record.wareHouseAddress,jdbcType=VARCHAR},
+      ware_house_add_time = #{record.wareHouseAddTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bulb.rfid.entity.WareHouse" >
+    update ware_house
+    <set >
+      <if test="wareHouseName != null" >
+        ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseAddress != null" >
+        ware_house_address = #{wareHouseAddress,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseAddTime != null" >
+        ware_house_add_time = #{wareHouseAddTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where ware_house_id = #{wareHouseId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bulb.rfid.entity.WareHouse" >
+    update ware_house
+    set ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      ware_house_address = #{wareHouseAddress,jdbcType=VARCHAR},
+      ware_house_add_time = #{wareHouseAddTime,jdbcType=TIMESTAMP}
+    where ware_house_id = #{wareHouseId,jdbcType=VARCHAR}
+  </update>
+  
+  <!-- ====================================== -->
+  <!-- 仓库信息-负责人信息-物品数量统计联合查询片段 -->
+	<sql id="wugSelect">
+		from user_ware_house h
+		LEFT JOIN	ware_house w 
+			on h.ware_house_id = w.ware_house_id 
+		LEFT JOIN user u 
+			on h.user_id = u.user_id 
+		LEFT JOIN (select ware_house_id,count(*) goods_num FROM goods GROUP BY ware_house_id) b
+			ON h.ware_house_id = b.ware_house_id
+	</sql>
+	<resultMap type="wareHouse" id="WareHouseResultMap">
+		<id property="wareHouseId" column="ware_house_id"/>
+		<result property="wareHouseName" column="ware_house_name"/>
+		<result property="wareHouseAddress" column="ware_house_address"/>
+		<result property="wareHouseAddTime" column="ware_house_add_time"/>
+		<result property="goodsNum"	column="goods_num"/>
+	</resultMap>
+	<resultMap type="wareHouse" id="WareHouseUserResultMap">
+		<id property="wareHouseId" column="ware_house_id"/>
+		<result property="wareHouseName" column="ware_house_name"/>
+		<result property="wareHouseAddress" column="ware_house_address"/>
+		<result property="wareHouseAddTime" column="ware_house_add_time"/>
+		<result property="goodsNum" column="goods_num"/>
+		<!-- 配置一对多的关系 -->
+		<collection property="users" javaType="list" ofType="user">
+			<id property="userId" column="user_id"/>
+			<result property="userAccount" column="user_account"/>
+			<result property="userPassword" column="user_password"/>
+			<result property="userName" column="user_name"/>
+			<result property="userPhone" column="user_phone"/>
+			<result property="addTime" column="add_time"/>
+		</collection>
+	</resultMap>
+  <!-- 查看仓库详情 	Ware_House selectWareHouseById(String ware_house_id);-->
+	<select id="selectWareHouseById" parameterType="java.lang.String" resultMap="WareHouseUserResultMap">
+		SELECT w.*,u.user_id,u.user_name,u.user_phone,b.goods_num
+		<include refid="wugSelect"/>
+		where h.ware_house_id = #{wareHouseId}
+	</select>
+<!-- 根据仓库名字查找仓库 selectWareHouseByName2（String ware_house_name);-->
+	<select id="selectWareHouseByName2" resultMap="WareHouseUserResultMap" parameterType="java.lang.String">
+		SELECT w.*,u.user_id,u.user_name,u.user_phone,b.goods_num
+		<include refid="wugSelect"/>
+		where w.ware_house_name = #{wareHouseName}
+	</select>
+<!-- 根据仓库名字判断是否存在 		int acountWareHouseByName(String wareHouseName,String wareHouseId);-->		
+	<select id="countWareHouseByName" resultType="int" parameterType="java.lang.String">
+		select COUNT(*) from ware_house where ware_house_name = #{0} AND ware_house_id != #{1}
+	</select>
+<!-- 获取仓库列表	List<WareHouse> selectWareHouseList(); -->
+	<select id="selectWareHouseList" resultMap="WareHouseResultMap">
+		select ware_house_id ,ware_house_name from ware_house 
+	</select>
+  
+</mapper>

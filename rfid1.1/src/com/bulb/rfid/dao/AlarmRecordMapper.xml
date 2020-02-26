@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.AlarmRecordMapper" >
+
+	<!-- 一对一关联查询 -->
+	<resultMap type="AlarmRecord" id="alist">
+		 <id column="alarm_record_id" property="alarmRecordId"/>
+   		 <result column="goods_name" property="goodsName"/>
+   		 <result column="ware_house_name" property="wareHouseName"/>
+   		 <result column="alarm_record_time" property="alarmRecordTime"/>
+		 <association property="monitor" column="m_id" select="com.bulb.rfid.dao.MonitorMapper.selectById"/>
+	</resultMap>
+	
+	<!-- 添加报警记录-->
+	<insert id="insertAlarmRecord" parameterType="AlarmRecord">
+		insert into alarm_record (m_id,goods_name,ware_house_name,alarm_record_time)
+			values (#{monitor.mId},#{goodsName},#{wareHouseName},#{alarmRecordTime})
+	</insert>
+	
+	<!-- 根据RFID,物品名称，仓库查询那个物品的所有报警记录时间   -->
+	<select id="selectAllAlarmRecordDateByGoods" parameterType="java.util.Map" resultType="Date">
+  		select a.alarm_record_time from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  				where m.rfid_id = #{rfidId}
+  					and a.goods_name = #{goodsName}
+  						and a.ware_house_name = #{wareHouseName}
+							order by a.alarm_record_time desc
+  	</select>
+	
+	<!-- 根据RFID查询当天报警记录时间   -->
+	<select id="selectAlarmRecordNowDateByRfid" parameterType="String" resultType="Date">
+  		select a.alarm_record_time from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  				where m.rfid_id = #{rfidId}
+  					and to_days(a.alarm_record_time) = to_days(now())
+						order by a.alarm_record_time desc
+  	</select>
+  	
+	<!-- 查找物品的报警次数  -->
+	<select id="getAlarmCountByGoods" parameterType="AlarmRecord" resultType="Integer">
+  		select count(1) from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  				where a.goods_name = #{goodsName}
+  					and a.ware_house_name = #{wareHouseName}
+  						and m.rfid_id = #{monitor.rfidId}
+  	</select>
+  	
+	<!-- 根据报警记录ID查询报警详情  -->
+	<select id="selectAlarmRecordInfoById" parameterType="Integer" resultMap="alist">
+  		select * from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  				where a.alarm_record_id = #{alarmRecordId}
+  	</select>
+  	
+	<!-- 根据查询条件查询报警记录 -->
+  	<select id="selectAlarmRecordByQueryVo" parameterType="QueryVo" resultMap="alist">
+  		select * from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  		<where>
+  			<if test="rfidId !=null and rfidId !=''">
+				m.rfid_id like "%"#{rfidId}"%"
+			</if>
+			<if test="wareHouseName !=null and wareHouseName !=''">
+				and a.ware_house_name = #{wareHouseName}
+			</if>
+			<if test="beginTime != null and beginTime !=''">
+				and a.alarm_record_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime !=''">
+				and a.alarm_record_time &lt;= #{endTime}
+			</if>
+  		</where>
+			order by a.alarm_record_time desc
+  	</select>
+	
+	<!-- 根据仓库，rfid查询实时报警记录   -->
+	<select id="selectNowAlarmRecordByRfidWareHouse" parameterType="java.util.Map" resultMap="alist">
+  		select * from alarm_record a 
+  			left join monitor m on a.m_id = m.m_id 
+  		<where>
+  			<if test="rfidId !=null and rfidId !=''">
+				m.rfid_id like "%"#{rfidId}"%"
+			</if>
+			<if test="wareHouseName !=null and wareHouseName !=''">
+				and a.ware_house_name = #{wareHouseName}
+			</if>
+			and to_days(a.alarm_record_time) = to_days(now())
+  		</where>
+			order by a.alarm_record_time desc
+  	</select>
+	
+	<!-- 查询历史监控-->
+	 <select id="selectAllAlarmRecord" resultMap="alist">
+	 	select * from alarm_record a 
+	 		left join monitor m on a.m_id = m.m_id 
+	 			order by a.alarm_record_time desc
+	 </select>
+	
+	<!-- 查询当天该物品的最新一条报警记录 -->
+	<select id="selectNowAlarmRecord" resultMap="alist">
+	 	select * from (select * from alarm_record order by alarm_record_time desc) a 
+			left join monitor m on a.m_id = m.m_id  
+				group by a.goods_name
+					HAVING to_days(alarm_record_time) = to_days(now())
+	 </select>
+	
+	<!-- 获取本月报警数 -->
+	 <select id="selectMonthCount" resultType="Integer">
+	 	select count(1) from alarm_record
+			where date_format(alarm_record_time,'%Y-%m')=date_format(now(),'%Y-%m')
+	 </select>
+
+	<!-- 获取本周报警数 -->
+	 <select id="selectWeekCount" resultType="Integer">
+	 	select count(1) from alarm_record 
+			where YEARWEEK(date_format(alarm_record_time,'%Y-%m-%d')) = YEARWEEK(now())
+	 </select>
+	
+	<!-- 获取昨日报警数 -->
+	 <select id="selectYestodayCount" resultType="Integer">
+	 	select count(1) from alarm_record 
+			where to_days(alarm_record_time) = to_days(now())-1
+	 </select>
+	 
+	<!-- 获取当日报警数 -->
+	 <select id="selectTodayCount" resultType="Integer">
+	 	select count(1) from alarm_record 
+			where to_days(alarm_record_time) = to_days(now())
+	 </select>
+	
+	 <!-- 统计当天 -->
+  <select id="countAlarmRecordToday" resultType="Integer">
+  	select count(*) from alarm_record where to_days(alarm_record_time) = to_days(now());
+  </select>
+  
+  <!-- 统计昨天 -->
+  <select id="countAlarmRecordYesterday" resultType="Integer">
+  	select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-1;
+  </select>
+  
+  <!-- 统计前天 -->
+  <select id="countAlarmRecordTwo" resultType="Integer">
+  		select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-2;
+  </select>
+  
+  <!-- 统计前3天 -->
+  <select id="countAlarmRecordThree" resultType="Integer">
+  		select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-3;
+  </select>
+  
+  <!-- 统计前4天 -->
+  <select id="countAlarmRecordFour" resultType="Integer">
+  		select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-4;
+  </select>
+  
+  <!-- 统计前5天 -->
+  <select id="countAlarmRecordFive" resultType="Integer">
+  		select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-5;
+  </select>
+  
+  <!-- 统计前6天 -->
+  <select id="countAlarmRecordSix" resultType="Integer">
+  		select count(1) from alarm_record where to_days(alarm_record_time) = to_days(now())-6;
+  </select>
+	
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.AlarmRecord" >
+    <id column="alarm_record_id" property="alarmRecordId" jdbcType="INTEGER" />
+    <result column="m_id" property="mId" jdbcType="INTEGER" />
+    <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+    <result column="ware_house_name" property="wareHouseName" jdbcType="VARCHAR" />
+    <result column="alarm_record_time" property="alarmRecordTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    alarm_record_id, m_id, goods_name, ware_house_name, alarm_record_time
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.AlarmRecordExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from alarm_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from alarm_record
+    where alarm_record_id = #{alarmRecordId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from alarm_record
+    where alarm_record_id = #{alarmRecordId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.AlarmRecordExample" >
+    delete from alarm_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.bulb.rfid.entity.AlarmRecord" >
+    insert into alarm_record (alarm_record_id, m_id, goods_name, 
+      ware_house_name, alarm_record_time)
+    values (#{alarmRecordId,jdbcType=INTEGER}, #{mId,jdbcType=INTEGER}, #{goodsName,jdbcType=VARCHAR}, 
+      #{wareHouseName,jdbcType=VARCHAR}, #{alarmRecordTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.AlarmRecord" >
+    insert into alarm_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="alarmRecordId != null" >
+        alarm_record_id,
+      </if>
+      <if test="mId != null" >
+        m_id,
+      </if>
+      <if test="goodsName != null" >
+        goods_name,
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name,
+      </if>
+      <if test="alarmRecordTime != null" >
+        alarm_record_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="alarmRecordId != null" >
+        #{alarmRecordId,jdbcType=INTEGER},
+      </if>
+      <if test="mId != null" >
+        #{mId,jdbcType=INTEGER},
+      </if>
+      <if test="goodsName != null" >
+        #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="alarmRecordTime != null" >
+        #{alarmRecordTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.AlarmRecordExample" resultType="java.lang.Integer" >
+    select count(*) from alarm_record
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update alarm_record
+    <set >
+      <if test="record.alarmRecordId != null" >
+        alarm_record_id = #{record.alarmRecordId,jdbcType=INTEGER},
+      </if>
+      <if test="record.mId != null" >
+        m_id = #{record.mId,jdbcType=INTEGER},
+      </if>
+      <if test="record.goodsName != null" >
+        goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseName != null" >
+        ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.alarmRecordTime != null" >
+        alarm_record_time = #{record.alarmRecordTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update alarm_record
+    set alarm_record_id = #{record.alarmRecordId,jdbcType=INTEGER},
+      m_id = #{record.mId,jdbcType=INTEGER},
+      goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      alarm_record_time = #{record.alarmRecordTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bulb.rfid.entity.AlarmRecord" >
+    update alarm_record
+    <set >
+      <if test="mId != null" >
+        m_id = #{mId,jdbcType=INTEGER},
+      </if>
+      <if test="goodsName != null" >
+        goods_name = #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="alarmRecordTime != null" >
+        alarm_record_time = #{alarmRecordTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where alarm_record_id = #{alarmRecordId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bulb.rfid.entity.AlarmRecord" >
+    update alarm_record
+    set m_id = #{mId,jdbcType=INTEGER},
+      goods_name = #{goodsName,jdbcType=VARCHAR},
+      ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      alarm_record_time = #{alarmRecordTime,jdbcType=TIMESTAMP}
+    where alarm_record_id = #{alarmRecordId,jdbcType=INTEGER}
+  </update>
+</mapper>

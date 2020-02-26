@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.UserWareHouseMapper" >
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.UserWareHouseKey" >
+    <id column="user_id" property="userId" jdbcType="VARCHAR" />
+    <id column="ware_house_id" property="wareHouseId" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    user_id, ware_house_id
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.UserWareHouseExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from user_ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="com.bulb.rfid.entity.UserWareHouseKey" >
+    delete from user_ware_house
+    where user_id = #{userId,jdbcType=VARCHAR}
+      and ware_house_id = #{wareHouseId,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.UserWareHouseExample" >
+    delete from user_ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <!-- <insert id="insert" parameterType="com.bulb.rfid.entity.UserWareHouseKey" > -->
+  <insert id="insert" parameterType="java.lang.String" >
+    insert into user_ware_house (user_id, ware_house_id)
+    <!-- values (#{userId,jdbcType=VARCHAR}, #{wareHouseId,jdbcType=VARCHAR}) -->
+    values (#{0}, #{1})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.UserWareHouseKey" >
+    insert into user_ware_house
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="wareHouseId != null" >
+        ware_house_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseId != null" >
+        #{wareHouseId,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.UserWareHouseExample" resultType="java.lang.Integer" >
+    select count(*) from user_ware_house
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update user_ware_house
+    <set >
+      <if test="record.userId != null" >
+        user_id = #{record.userId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseId != null" >
+        ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update user_ware_house
+    set user_id = #{record.userId,jdbcType=VARCHAR},
+      ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <!-- void updateUserId(String userId,String wareHouseId); -->
+  <update id="updateUserId" parameterType="java.lang.String">
+  	UPDATE user_ware_house SET user_id = #{0}	 WHERE ware_house_id = #{1}
+  </update>
+</mapper>

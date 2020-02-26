@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.InportMapper" >
+
+	<!-- 根据查询条件查询入库记录  -->
+	<select id="selectInportByQueryVo" parameterType="QueryVo" resultMap="BaseResultMap">
+  		select * from inport 
+  		<where>
+  			<if test="rfidId !=null and rfidId !=''">
+				rfid_id like "%"#{rfidId}"%"
+			</if>
+			<if test="wareHouseName !=null and wareHouseName !=''">
+				and ware_house_name like "%"#{wareHouseName}"%"
+			</if>
+			<if test="beginTime != null and beginTime !=''">
+				and inport_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime !=''">
+				and inport_time &lt;= #{endTime}
+			</if>
+  		</where>
+  			order by inport_time desc
+  	</select>
+	
+	<!-- 查询所有入库记录   -->
+	<select id="selectAllInport" resultMap="BaseResultMap">
+  		select * from inport 
+  			order by inport_time desc
+  	</select>
+	
+	<!-- 获取全部录入数 -->
+	 <select id="selectAllCount" resultType="Integer">
+	 	select count(1) from inport
+	 </select>
+	 
+	<!-- 获取本月录入数 -->
+	 <select id="selectMonthCount" resultType="Integer">
+	 	select count(1) from inport
+			where date_format(inport_time,'%Y-%m')=date_format(now(),'%Y-%m')
+	 </select>
+
+	<!-- 获取本周录入数 -->
+	 <select id="selectWeekCount" resultType="Integer">
+	 	select count(1) from inport 
+			where YEARWEEK(date_format(inport_time,'%Y-%m-%d')) = YEARWEEK(now())
+	 </select>
+	
+	<!-- 获取当日录入数 -->
+	 <select id="selectTodayCount" resultType="Integer">
+	 	select count(1) from inport 
+			where to_days(inport_time) = to_days(now())
+	 </select>
+
+	 <!-- 统计当天 -->
+  <select id="countInportToday" resultType="Integer">
+  	select count(*) from inport where to_days(inport_time) = to_days(now());
+  </select>
+  
+  <!-- 统计昨天 -->
+  <select id="countInportYesterday" resultType="Integer">
+  	select count(1) from inport where to_days(inport_time) = to_days(now())-1;
+  </select>
+  
+  <!-- 统计前天 -->
+  <select id="countInportTwo" resultType="Integer">
+  		select count(1) from inport where to_days(inport_time) = to_days(now())-2;
+  </select>
+  
+  <!-- 统计前3天 -->
+  <select id="countInportThree" resultType="Integer">
+  		select count(1) from inport where to_days(inport_time) = to_days(now())-3;
+  </select>
+  
+  <!-- 统计前4天 -->
+  <select id="countInportFour" resultType="Integer">
+  		select count(1) from inport where to_days(inport_time) = to_days(now())-4;
+  </select>
+  
+  <!-- 统计前5天 -->
+  <select id="countInportFive" resultType="Integer">
+  		select count(1) from inport where to_days(inport_time) = to_days(now())-5;
+  </select>
+  
+  <!-- 统计前6天 -->
+  <select id="countInportSix" resultType="Integer">
+  		select count(1) from inport where to_days(inport_time) = to_days(now())-6;
+  </select>
+
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.Inport" >
+    <id column="inport_id" property="inportId" jdbcType="INTEGER" />
+    <result column="rfid_id" property="rfidId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
+    <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+    <result column="ware_house_id" property="wareHouseId" jdbcType="VARCHAR" />
+    <result column="ware_house_name" property="wareHouseName" jdbcType="VARCHAR" />
+    <result column="inport_time" property="inportTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    inport_id, rfid_id, user_id, user_name, goods_id, goods_name, ware_house_id, ware_house_name, 
+    inport_time
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.InportExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from inport
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from inport
+    where inport_id = #{inportId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from inport
+    where inport_id = #{inportId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.InportExample" >
+    delete from inport
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.bulb.rfid.entity.Inport" >
+    insert into inport (inport_id, rfid_id, user_id, 
+      user_name, goods_id, goods_name, 
+      ware_house_id, ware_house_name, inport_time
+      )
+    values (#{inportId,jdbcType=INTEGER}, #{rfidId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{userName,jdbcType=VARCHAR}, #{goodsId,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, 
+      #{wareHouseId,jdbcType=VARCHAR}, #{wareHouseName,jdbcType=VARCHAR}, #{inportTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.Inport" >
+    insert into inport
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="inportId != null" >
+        inport_id,
+      </if>
+      <if test="rfidId != null" >
+        rfid_id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="goodsId != null" >
+        goods_id,
+      </if>
+      <if test="goodsName != null" >
+        goods_name,
+      </if>
+      <if test="wareHouseId != null" >
+        ware_house_id,
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name,
+      </if>
+      <if test="inportTime != null" >
+        inport_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="inportId != null" >
+        #{inportId,jdbcType=INTEGER},
+      </if>
+      <if test="rfidId != null" >
+        #{rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null" >
+        #{goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsName != null" >
+        #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseId != null" >
+        #{wareHouseId,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="inportTime != null" >
+        #{inportTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.InportExample" resultType="java.lang.Integer" >
+    select count(*) from inport
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update inport
+    <set >
+      <if test="record.inportId != null" >
+        inport_id = #{record.inportId,jdbcType=INTEGER},
+      </if>
+      <if test="record.rfidId != null" >
+        rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userId != null" >
+        user_id = #{record.userId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userName != null" >
+        user_name = #{record.userName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsId != null" >
+        goods_id = #{record.goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsName != null" >
+        goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseId != null" >
+        ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseName != null" >
+        ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.inportTime != null" >
+        inport_time = #{record.inportTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update inport
+    set inport_id = #{record.inportId,jdbcType=INTEGER},
+      rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      user_id = #{record.userId,jdbcType=VARCHAR},
+      user_name = #{record.userName,jdbcType=VARCHAR},
+      goods_id = #{record.goodsId,jdbcType=VARCHAR},
+      goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      ware_house_id = #{record.wareHouseId,jdbcType=VARCHAR},
+      ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      inport_time = #{record.inportTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bulb.rfid.entity.Inport" >
+    update inport
+    <set >
+      <if test="rfidId != null" >
+        rfid_id = #{rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null" >
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null" >
+        goods_id = #{goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsName != null" >
+        goods_name = #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseId != null" >
+        ware_house_id = #{wareHouseId,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="inportTime != null" >
+        inport_time = #{inportTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where inport_id = #{inportId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bulb.rfid.entity.Inport" >
+    update inport
+    set rfid_id = #{rfidId,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      user_name = #{userName,jdbcType=VARCHAR},
+      goods_id = #{goodsId,jdbcType=VARCHAR},
+      goods_name = #{goodsName,jdbcType=VARCHAR},
+      ware_house_id = #{wareHouseId,jdbcType=VARCHAR},
+      ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      inport_time = #{inportTime,jdbcType=TIMESTAMP}
+    where inport_id = #{inportId,jdbcType=INTEGER}
+  </update>
+  <!-- ========================================================= -->
+  <resultMap type="inport" id="InportResultMap">
+		<id property="inportId" column="inport_id"/>
+		<result property="rfidId" column="rfid_id"/>
+		<result property="userId" column="user_id"/>
+		<result property="userName" column="user_name"/>
+		<result property="goodsId" column="goods_id"/>
+		<result property="goodsName" column="goods_name"/>
+		<result property="wareHouseId" column="ware_house_id"/>
+		<result property="wareHouseName" column="ware_house_name"/>
+		<result property="inportTime" column="inport_time"/>
+	</resultMap>
+  <!-- 根据inportId 查找 inport 信息 -->
+	<select id="selectInportByInportId" parameterType="java.lang.Integer" resultMap="InportResultMap">
+		SELECT i.* from inport i where inport_id = #{inportId}
+	</select>
+<!--  查找仓库负责人信息 (根据 ware_house_id)	User selectUserByWareHouseId(String ware_house_id); -->
+	<resultMap type="user" id="userResultMap">
+		<id property="userId" column="user_id"/>
+		<result property="userAccount" column="user_account"/>
+		<result property="userPassword" column="user_password"/>
+		<result property="userName" column="user_name"/>
+		<result property="userPhone" column="user_phone"/>
+		<result property="addTime" column="add_time"/>
+	</resultMap>
+	<select id="selectUserByWareHouseId" parameterType="java.lang.String" resultMap="userResultMap">
+		SELECT u.* from user u 
+			LEFT JOIN user_ware_house w ON u.user_id = w.user_id
+		WHERE 
+			w.ware_house_id = #{wareHouseId}
+	</select>
+</mapper>

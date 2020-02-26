@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>RFID监控系统V1.0首页</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="css/index.css" />
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="js/template-native.js" type="text/javascript"></script>
+    <script src="js/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
+    <script src="js/bootstrap-datetimepicker.zh-CN.js" type="text/javascript"></script>
+    <script src="js/echarts.min.js" type="text/javascript"></script>
+    <script src="js/index.js" type="text/javascript"></script>
+
+<!--首页-->
+<script type="text/template" id="Index">
+    <div class="col-md-10" style="text-align: center;">
+            <%for(var i=0;i<item.length;i++){%>
+            <div class="col-md-2 col-md-push-<%=(i+1)%> border">
+                <span><%=cate[i]%></span>
+                <span><%=item[i]%></span>
+            </div>
+            <%}%>
+        </div>
+        <div class="col-lg-12 data">
+                <table class="table table-bordered ">
+                    <tr>
+                        <th>序号</th>
+                        <th>RFID编号</th>
+                        <th>物品名称</th>
+                        <th>所在仓库</th>
+                        <th>报警信息</th>
+                        <th>发生时间</th>
+                        <th>操作</th>
+                    </tr>
+                    <%for(var i=0;i<record.length;i++){%>
+                    <tr>
+                        <td><%=(i+1)%></td>
+                        <td><%=record[i].monitor.rfidId%></td>
+                        <td><%=record[i].goodsName%></td>
+                        <td><%=record[i].wareHouseName%></td>
+                        <td><%=record[i].monitor.mState%></td>
+                        <td><%=record[i].addTime%></td>
+                        <td class="tdbtn" onclick='See("http://10.10.72.10:8080/rfid1.1/AlarmRecord/selectAlarmRecordAllInfoById.action","Btnmonitoring","tdbtn",this)' data-input="<%=record[i].alarmRecordId%>" >查看</td>
+                    </tr>
+                    <% } %>
+                </table>
+            </div>
+</script>
+<!--监控管理!!!!!-->
+<!--实时监控-->
+<script type="text/template" id="Rmonitoring">
+    <div class="col-md-12 Overall_date">
+        <div class="date_header">    
+            <div class="col-md-6">
+                    <span>RFID编号</span>
+                    <input class="Rfid" type="text">
+                    <span>所在仓库</span>
+                    <select id="example-radio">
+                            <option value=""></option>
+                        <%for(var i=0;i<code.length;i++){%>
+                            <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                        <%}%>
+                    </select>
+            </div>
+            <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/AlarmRecord/selectNowAlarmRecordByRfidWareHouse.action","Rmonitoring","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action")' src="images/search.png" alt="">
+         </div>    
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>RFID编号</th>
+                <th>物品名称</th>
+                <th>所在仓库</th>
+                <th>报警信息</th>
+                <th>发生时间</th>
+                <th>操作</th>
+            </tr>
+            <%for(var i=0;i<items.length;i++){%>
+            <tr>
+                <td><%=(i+1)%></td>
+                <td><%=items[i].monitor.rfidId%></td>
+                <td><%=items[i].goodsName%></td>
+                <td><%=items[i].wareHouseName%></td>
+                <td><%=items[i].monitor.mState%></td>
+                <td><%=items[i].addTime%></td>
+                <td class="tdbtn" onclick='See("http://10.10.72.10:8080/rfid1.1/AlarmRecord/selectAlarmRecordTodayInfoById.action","Btnmonitoring","tdbtn",this)' data-input="<%=items[i].alarmRecordId%>" >查看</td>
+            </tr>
+            <% } %>
+        </table>
+    </div>
+</script>
+<!--历史监控-->
+<script type="text/template" id="Hmonitoring">
+    <div class="col-md-12 Overall_date">
+        <div class="date_header">    
+            <div class="col-md-6">
+                    <span>RFID编号</span>
+                    <input class="Rfid" type="text">
+                    <span>所在仓库</span>
+                    <select id="example-radio">
+                            <option value=""></option>
+                        <%for(var i=0;i<code.length;i++){%>
+                            <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                        <%}%>
+                    </select>
+            </div>
+                <div class="col-md-1 input-append" id="stime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time1" class="form-control "  type="text" value="请选择开始时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <div class="col-md-1 input-append" id="etime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time2" class="form-control "  type="text" value="请选择结束时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/AlarmRecord/selectAlarmRecordByQueryVo.action","Hmonitoring","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action")' src="images/search.png" alt="">
+        </div>    
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>RFID编号</th>
+                <th>物品名称</th>
+                <th>所在仓库</th>
+                <th>报警信息</th>
+                <th>发生时间</th>
+                <th>操作</th>
+            </tr>
+            <%for(var i=0;i<items.length;i++){%>
+            <tr>
+                <td><%=(i+1)%></td>
+                <td><%=items[i].monitor.rfidId%></td>
+                <td><%=items[i].goodsName%></td>
+                <td><%=items[i].wareHouseName%></td>
+                <td><%=items[i].monitor.mState%></td>
+                <td><%=items[i].addTime%></td>
+                <td class="tdbtn" onclick='See("http://10.10.72.10:8080/rfid1.1/AlarmRecord/selectAlarmRecordAllInfoById.action","Btnmonitoring","tdbtn",this)' data-input="<%=items[i].alarmRecordId%>" >查看</td>
+            </tr>
+            <% } %>
+        </table>
+    </div>
+</script>
+<script type="text/template" id="Btnmonitoring">
+    <div class="col-md-11 Detailed ">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">报警详情</a></li>
+            <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">报警记录</a></li>
+        </ul>
+        <div class="tab-content data DeletTop">
+            <div role="tabpanel" class="tab-pane active" id="home">
+                <div class="Detailed_Left">
+                    <%for(var i=0;i<items.length;i++){%>
+                    <div class="left_Title">
+                        <span>RFID编号</span>
+                        <span>所在仓库</span>
+                        <span>是否持续报警</span>
+                    </div>
+                    <div class="left_data">
+                         <span><%=items[i].rfidId%></span>
+                         <span><%=items[i].wareHouseName%></span>
+                         <span><%=items[i].alarmCount%></span>
+                    </div>
+                    <div class="left_Title">
+                        <span>物品名称</span>
+                        <span>仓库负责人</span>
+                        <span>持续报警次数</span>
+                    </div>
+                    <div class="left_data">
+                         <span><%=items[i].goodsName%></span>
+                         <span><%=items[i].userName%></span>
+                         <span><%=items[i].continuedAlarm%></span>
+                    </div>
+                    <%}%>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="profile">
+                <table class="table table-bordered ">
+                    <tr>
+                        <th>序号</th>
+                        <th>报警信息</th>
+                        <th>报警时间</th>
+                    </tr>
+                    <%for(var i=0;i<items[0].DateList.length;i++){%>
+                    <tr>
+                        <td><%=(i+1)%></td>
+                        <td>振动</td>
+                        <td><%=items[0].DateList[i]%></td>
+                    </tr>
+                    <%}%>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+<!--物品管理!!!!!-->
+<!--条码信息-->
+<script type="text/template" id="Icode">
+        <div class="col-md-12 Overall_date">
+            <div class="date_header">
+                <div class="col-md-6">
+                    <span>RFID编号</span>
+                    <input class="Rfid" type="text">
+                    <span>所在仓库</span>
+                    <select id="example-radio">
+                        <option value=""></option>
+                        <%for(var i=0;i<code.length;i++){%>
+                        <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                        <%}%>
+                    </select>
+                </div>
+                <div class="col-md-1 input-append" id="stime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time1" class="form-control "  type="text" value="请选择开始时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <div class="col-md-1 input-append" id="etime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time2" class="form-control "  type="text" value="请选择结束时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/Goods/selectGoodsByQueryVo.action","Icode")' src="images/search.png" alt="">
+             </div>
+        </div>
+        <div class="row data">
+            <table class="table table-bordered ">
+                <tr>
+                    <th>序号</th>
+                    <th>RFID编号</th>
+                    <th>物品名称</th>
+                    <th>所在仓库</th>
+                    <th>物品状态</th>
+                    <th>录入时间</th>
+                    <th>操作</th>
+                </tr>
+                <%for(var i=0;i<items.length;i++){%>
+                <tr>
+                    <td><%=(i+1)%></td>
+                    <td><%=items[i].rfidId%></td>
+                    <td><%=items[i].goodsName%></td>
+                    <td><%=items[i].wareHouseName%></td>
+                    <td><%=items[i].goodsState%></td>
+                    <td><%=items[i].addTime%></td>
+                    <td class="tdbtn">
+                        <span class="See" onclick='See("http://10.10.72.10:8080/rfid1.1/Goods/selectGoodsById.action","SeeIcode","See",this)' data-input="<%=items[i].goodsId%>" >查看</span>|
+                        <span class="Ddit" onclick='Ddit("http://10.10.72.10:8080/rfid1.1/Goods/selectGoodsById.action","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action","DditIcode",this)'  data-input="<%=items[i].goodsId%>"data-toggle="modal" data-target="#myModal">编辑</span>
+                    </td>
+                </tr>
+                <% } %>
+            </table>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                    <div class="modal-content">
+                    </div>
+            </div>
+        </div>
+</script>
+<script type="text/template" id="SeeIcode">
+        <div class="col-md-12 data">
+            <div class="Detailed_Left">
+                <%for(var i=0;i<items.length;i++){%>
+                <div class="left_Title">
+                    <span>RFID编号</span>
+                    <span>物品规格</span>
+                    <span>所在仓库</span>
+                    <span>录入日期</span>
+                    <span>备注信息</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].goods.rfidId%></span>
+                     <span>无</span>
+                     <span><%=items[0].goods.wareHouseName%></span>
+                     <span><%=items[0].addTime%></span>
+                     <span>无</span>
+                </div>
+                <div class="left_Title">
+                    <span>物品名称</span>
+                    <span>物品数量</span>
+                    <span>仓库负责人</span>
+                    <span>报警次数</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].goods.goodsName%></span>
+                     <span>无</span>
+                     <span><%=items[0].goods.user.userName%></span>
+                     <span><%=items[0].alarm_record_count%></span>
+                </div>
+                <%}%>
+            </div>
+        </div>
+</script>
+<script type="text/template" id="DditIcode">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+            </button>
+        </div>
+        <div  class="modal-body">
+            <%for(var i=0;i<items.length;i++){%>
+            <div class="DditModel">
+                <span>物品名称：</span>
+                <input type="text" id="goodsName" value="<%=items[i].goods.goodsName%>" />
+            </div>
+            <div class="DditModel">
+                <span>物品状态：</span>
+                <select id="example-radio1">
+                    <option value="in">监控</option>
+                    <option value="out">已出库</option>
+                </select>
+            </div>
+            <% } %>
+            <div class="DditModel">
+                <span>所在仓库</span>
+                <select id="example-radio2">
+                    <%for(var i=0;i<code.length;i++){%>
+                    <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                    <%}%>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取消
+            </button>
+            <input  onclick='EDdit("http://10.10.72.10:8080/rfid1.1/Goods/goodsUpdate.action","http://10.10.72.10:8080/rfid1.1/Goods/selectGoodsByQueryVo.action","DditIcode","Icode")' type="button" class="btn btn-primary" value="确认修改" />
+        </div>
+</script>
+<!--物品出库-->
+<script type="text/template" id="Ocode">
+        <div class="col-md-12 Overall_date">
+            <div class="date_header">
+                <div class="col-md-6">
+                    <span>RFID编号</span>
+                    <input type="text">
+                    <span>所在仓库</span>
+                    <select id="example-radio">
+                            <option value=""></option>
+                            <%for(var i=0;i<code.length;i++){%>
+                            <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                            <%}%>
+                    </select>
+                </div>
+                <div class="col-md-1 input-append" id="stime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time1" class="form-control "  type="text" value="请选择开始时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <div class="col-md-1 input-append" id="etime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time2" class="form-control "  type="text" value="请选择结束时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/Export/selectByQueryVo.action","Ocode","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action")' src="images/search.png" alt="">
+                <input class="inputbtn" type="button" value="新增出库" />
+            </div>
+        </div>
+        <div class="row data">
+            <table class="table table-bordered ">
+                <tr>
+                    <th>序号</th>
+                    <th>RFID编号</th>
+                    <th>物品名称</th>
+                    <th>出库仓库</th>
+                    <th>出库日期</th>
+                    <th>操作</th>
+                </tr>
+                <%for(var i=0;i<items.length;i++){%>
+                <tr>
+                    <td><%=(i+1)%></td>
+                    <td><%=items[i].rfidId%></td>
+                    <td><%=items[i].goodsName%></td>
+                    <td><%=items[i].wareHouseName%></td>
+                    <td><%=items[i].addTime%></td>
+                    <td class="tdbtn">
+                        <span class="See" onclick='See("http://10.10.72.10:8080/rfid1.1/Export/selectById.action","SeeOcode","See",this)' data-input="<%=items[i].exportId%>">查看</span> 
+                    </td>
+                </tr>
+                <%}%>
+            </table>
+        </div>
+</script>
+<script type="text/template" id="SeeOcode">
+        <div class="col-md-12 data">
+            <div class="Detailed_Left">
+                <%for(var i=0;i<items.length;i++){%>
+                <div class="left_Title">
+                    <span>RFID编号</span>
+                    <span>物品规格</span>
+                    <span>所在仓库</span>
+                    <span>出库申请人</span>
+                    <span>出库时间</span>
+                    <span>出库说明</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].Export.rfidId%></span>
+                     <span><%=items[0].GoodsGuiGe%></span>
+                     <span><%=items[0].Export.wareHouseName%></span>
+                     <span><%=items[0].username%></span>
+                     <span><%=items[0].addTime%></span>
+                     <span><%=items[0].GoodsInfo%></span>
+                </div>
+                <div class="left_Title">
+                    <span>物品名称</span>
+                    <span>物品数量</span>
+                    <span>仓库负责人</span>
+                    <span>联系电话</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].Export.goodsName%></span>
+                     <span><%=items[0].GoodsCount%></span>
+                     <span><%=items[0].Export.userName%></span>
+                     <span><%=items[0].userphone%></span>
+                </div>
+                <%}%>
+            </div>
+        </div>
+</script>
+<!--物品入库-->
+<script type="text/template" id="Ecode">
+        <div class="col-md-12 Overall_date">
+            <div class="date_header">
+                <div class="col-md-6">
+                    <span>RFID编号</span>
+                    <input type="text">
+                    <span>所在仓库</span>
+                    <select id="example-radio">
+                            <option value=""></option>
+                            <%for(var i=0;i<code.length;i++){%>
+                            <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                            <%}%>
+                    </select>
+                </div>
+                <div class="col-md-1 input-append" id="stime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time1" class="form-control "  type="text" value="请选择开始时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <div class="col-md-1 input-append" id="etime"  data-date-format="yyyy-mm-dd">
+                    <input id="start_time2" class="form-control "  type="text" value="请选择结束时间" readonly />
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+                <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/Inport/selectInportByQueryVo.action","Ecode","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action")' src="images/search.png" alt="">
+                <input class="inputbtn" type="button" value="新增入库" />
+            </div>
+        </div>
+        <div class="row data">
+            <table class="table table-bordered ">
+                <tr>
+                    <th>序号</th>
+                    <th>RFID编号</th>
+                    <th>物品名称</th>
+                    <th>入库仓库</th>
+                    <th>入库日期</th>
+                    <th>操作</th>
+                </tr>
+                <%for(var i=0;i<items.length;i++){%>
+                <tr>
+                    <td><%=(i+1)%></td>
+                    <td><%=items[i].rfidId%></td>
+                    <td><%=items[i].goodsName%></td>
+                    <td><%=items[i].wareHouseName%></td>
+                    <td><%=items[i].addTime%></td>
+                    <td class="tdbtn">
+                        <span class="See" onclick='See("http://10.10.72.10:8080/rfid1.1/Inport/inportByid.action","SeeEcode","See",this)' data-input="<%=items[i].inportId%>">查看</span>
+                    </td>
+                </tr>
+                <%}%>
+            </table>
+        </div>
+        
+</script>
+<script type="text/template" id="SeeEcode">
+        <div class="col-md-12 data">
+            <div class="Detailed_Left">
+                <%for(var i=0;i<items.length;i++){%>
+                <div class="left_Title">
+                    <span>RFID编号</span>
+                    <span>物品规格</span>
+                    <span>所在仓库</span>
+                    <span>入库申请人</span>
+                    <span>入库时间</span>
+                    <span>入库说明</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].inport.rfidId%></span>
+                     <span>无</span>
+                     <span><%=items[0].inport.wareHouseName%></span>
+                     <span><%=items[0].inport.userName%></span>
+                     <span><%=items[0].addTime%></span>
+                     <span>无</span>
+                </div>
+                <div class="left_Title">
+                    <span>物品名称</span>
+                    <span>物品数量</span>
+                    <span>仓库负责人</span>
+                    <span>联系电话</span>
+                </div>
+                <div class="left_data">
+                     <span><%=items[0].inport.goodsName%></span>
+                     <span>无</span>
+                     <span><%=items[0].user.userName%></span>
+                     <span><%=items[0].user.userPhone%></span>
+                </div>
+                <%}%>
+            </div>
+        </div>
+</script>
+<script type="text/template" id="IncreaseEcode">
+    <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="DditModel">
+                <span>物品名称</span>
+                <input type="text" id="wareHouseId" value="" />
+            </div>
+            <div class="DditModel">
+                    <span>所在仓库</span>
+                    <select id="example-radio2">
+                        <%for(var i=0;i<code.length;i++){%>
+                        <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                        <%}%>
+                    </select>
+                </div>
+            <div class="DditModel">
+                <span>RFID编号：</span>
+                <select id="example-radio1">
+                    <option value=""></option>
+                    <%for(var i=0;i<items.length;i++){%>
+                    <option value="<%=items[i].userId%>"><%=items[i].userName%></option>
+                    <%}%>
+                </select>
+            </div>
+            <div class="DditModel">
+                <span>仓库地址：</span>
+                <input type="text" id="wareHouseAddress" value="" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取消
+            </button>
+            <input  onclick='EDdit("http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseInsert.action","http://10.10.72.10:8080/rfid1.1/WareHouse/selectAllWareHouse.action","IncreaseWcode","Wcode")' type="button" class="btn btn-primary" value="确认" />
+        </div> 
+</script>
+<!--仓库信息-->
+<script type="text/template" id="Wcode">
+    <div class="col-md-12 Overall_date">
+        <div class="date_header">
+            <div class="col-md-4">
+                <span>仓库名称</span>
+                <select id="example-radio">
+                        <option value=""></option>
+                        <%for(var i=0;i<code.length;i++){%>
+                        <option value="<%=code[i].wareHouseName%>"><%=code[i].wareHouseName%></option>
+                        <%}%>
+                </select>
+                <img class="search" onclick='Search("http://10.10.72.10:8080/rfid1.1/WareHouse/selectWareHouseByName.action","Wcode","http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseList.action")' src="images/search.png" alt="">
+            </div>
+            <input class="inputbtn" type="button" onclick='Ddit("http://10.10.72.10:8080/rfid1.1/User/selectAllUser.action","","IncreaseWcode")' data-toggle="modal" data-target="#myModal" value="新增仓库" />
+        </div>
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>仓库名称</th>
+                <th>负责人</th>
+                <th>联系电话</th>
+                <th>仓库地址</th>
+                <th>新增时间</th>
+                <th>操作</th>
+            </tr>
+            <%for(var i=0;i<items.length;i++){%>
+            <tr>
+                <td><%=(i+1)%></td>
+                <td><%=items[i].wareHouseName%></td>
+                <td><%=items[i].users[0].userName%></td>
+                <td><%=items[i].users[0].userPhone%></td>
+                <td><%=items[i].wareHouseAddress%></td>
+                <td><%=items[i].addTime%></td>
+                <td class="tdbtn">
+                    <span class="See" onclick='See("http://10.10.72.10:8080/rfid1.1/WareHouse/selectWareHouseInfoById.action","SeeWcode","Wcode",this)' data-input="<%=items[i].wareHouseId%>">查看</span> |
+                    <span class="Ddit" onclick='Ddit("http://10.10.72.10:8080/rfid1.1/WareHouse/selectWareHouseInfoById.action","","DditWcode",this)'  data-input="<%=items[i].wareHouseId%>"data-toggle="modal" data-target="#myModal">编辑</span> 
+                </td>
+            </tr>
+            <%}%>
+        </table>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/template" id="SeeWcode">
+    <div class="col-md-11 Detailed ">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">仓库详情</a></li>
+            <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">物品信息</a></li>
+        </ul>
+        <div class="tab-content data DeletTop">
+            <div role="tabpanel" class="tab-pane active" id="home">
+                    <div class="Detailed_Left">
+                        <%for(var i=0;i<items.length;i++){%>
+                        <div class="left_Title">
+                            <span>仓库名称</span>
+                            <span>仓库负责人</span>
+                            <span>物品数量</span>
+                            <span>仓库地址</span>
+                        </div>
+                        <div class="left_data">
+                             <span><%=items[i].ware_house.wareHouseName%></span>
+                             <span><%=items[i].ware_house.users[0].userName%></span>
+                             <span><%=items[i].ware_house.goodsNum%></span>
+                             <span class="long"><%=items[i].ware_house.wareHouseAddress%></span>
+                        </div>
+                        <div class="left_Title">
+                            <span>仓库编号</span>
+                            <span>联系电话</span>
+                            <span>创建时间</span>
+                        </div>
+                        <div class="left_data">
+                             <span><%=items[i].ware_house.wareHouseId%></span>
+                             <span><%=items[i].ware_house.users[0].userPhone%></span>
+                             <span><%=items[i].addTime%></span>
+                        </div>
+                        <%}%>
+                    </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="profile">
+                <table class="table table-bordered ">
+                    <tr>
+                        <th>序号</th>
+                        <th>RFID编号</th>
+                        <th>物品名称</th>
+                        <th>所在仓库</th>
+                        <th>录入日期</th>
+                    </tr>
+                    <%for(var i=0;i<items[0].goodslist.length;i++){%>
+                        <tr>
+                            <td><%=(i+1)%></td>
+                            <td><%=items[0].goodslist[i].rfidId%></td>
+                            <td><%=items[0].goodslist[i].goodsName%></td>
+                            <td><%=items[0].goodslist[i].wareHouseName%></td>
+                            <td><%=items[0].goodslist[i].addTime%></td>
+                        </tr>
+                        <%}%>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/template" id="DditWcode">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+            </button>
+        </div>
+        <div class="modal-body">
+            <%for(var i=0;i<items.length;i++){%>
+                <div class="DditModel">
+                    <span>负责人：</span>
+                    <input type="text" id="userName" value="<%=items[i].ware_house.users[0].userName%>" />
+                </div>
+                <div class="DditModel">
+                    <span>仓库名称：</span>
+                    <input type="text" id="wareHouseName" value="<%=items[i].ware_house.wareHouseName.substring(0,2)%>" />
+                    <span class="gray">*写几号就行，不用加后缀仓库</span>
+                </div>
+                <div class="DditModel">
+                    <span>仓库地址：</span>
+                    <input type="text" id="wareHouseAddress" value="<%=items[i].ware_house.wareHouseAddress%>" />
+                </div>
+            <% } %>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取消
+            </button>
+            <input  onclick='EDdit("http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseUpdate.action","http://10.10.72.10:8080/rfid1.1/WareHouse/selectAllWareHouse.action","DditWcode","Wcode")' type="button" class="btn btn-primary" value="确认修改" />
+        </div> 
+</script>
+<script type="text/template" id="IncreaseWcode">
+    <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="DditModel">
+                <span>仓库ID：</span>
+                <input type="text" id="wareHouseId" value="" />
+            </div>
+            <div class="DditModel">
+                <span>仓库名称：</span>
+                <input type="text" id="wareHouseName" value="" />
+                <span class="gray">*写几号就行，不用加后缀仓库</span>
+            </div>
+            <div class="DditModel">
+                <span>负责人：</span>
+                <select id="example-radio1">
+                    <option value=""></option>
+                    <%for(var i=0;i<items.length;i++){%>
+                    <option value="<%=items[i].userId%>"><%=items[i].userName%></option>
+                    <%}%>
+                </select>
+            </div>
+            <div class="DditModel">
+                <span>仓库地址：</span>
+                <input type="text" id="wareHouseAddress" value="" />
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+                取消
+            </button>
+            <input  onclick='EDdit("http://10.10.72.10:8080/rfid1.1/WareHouse/warehouseInsert.action","http://10.10.72.10:8080/rfid1.1/WareHouse/selectAllWareHouse.action","IncreaseWcode","Wcode")' type="button" class="btn btn-primary" value="确认添加" />
+        </div> 
+</script>
+<!--数据统计!!!!!-->
+<script type="text/template" id="DStatistics">
+    <div class="col-md-10" style="text-align: center;">
+        <%for(var i=0;i<item.length;i++){%>
+        <div class="col-md-2 col-md-push-<%=(i+1)%> border">
+            <span><%=cate[i]%></span>
+            <span><%=item[i]%></span>
+        </div>
+        <%}%>
+    </div>
+    <div id="main" style="width: 700px; height: 500px; margin-left: 100px;"></div>
+</script>
+<!--系统管理!!!!!-->
+<script type="text/template" id="Ipush">
+    <div class="col-md-12 Overall_date">
+            <div class="col-md-3">
+                <span>信息标题</span>
+                <input type="text">
+                <img class="search" src="images/search.png" alt="">
+            </div>
+            <input  class="inputbtn fr" type="button" value="新增入库" />
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>信息标题</th>
+                <th>信息内容</th>
+                <th>新增时间</th>
+                <th>操作</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>国庆放假通知</td>
+                <td>2018年国庆放假通知，20181001-20181007日为国庆假期，请大家注意安全，文明出游。</td>
+                <td>2018/07/30 12：00</td>
+                <td>
+                    <span>查看</span>|
+                    <span>编辑</span>|
+                    <span>删除</span>
+                </td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>国庆放假通知</td>
+                <td>2018年国庆放假通知，20181001-20181007日为国庆假期，请大家注意安全，文明出游。</td>
+                <td>2018/07/30 12：00</td>
+                <td>
+                    <span>查看</span>|
+                    <span>编辑</span>|
+                    <span>删除</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+<script type="text/template" id="IAmanagement">
+    <div class="col-md-12 Overall_date">
+        <div class="col-md-3">
+            <span>账号</span>
+            <input type="text">
+            <img class="search" src="images/search.png" alt="">
+        </div>
+        <input class="inputbtn fr" type="button" value="新增账号" />
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>账号</th>
+                <th>姓名</th>
+                <th>联系电话</th>
+                <th>所属角色</th>
+                <th>新增时间</th>
+                <th>操作</th>
+            </tr>
+            <%for(var i=0;i<items.length;i++){%>
+                <tr>
+                    <td><%=(i+1)%></td>
+                    <td><%=items[i].userAccount%></td>
+                    <td><%=items[i].userName%></td>
+                    <td><%=items[i].userPhone%></td>
+                    <td>管理员</td>
+                    <td><%=items[i].addTime%></td>
+                    <td class="tdbtn">
+                        <span>查看</span>|
+                        <span>编辑</span>
+                    </td>
+                </tr>
+            <%}%>
+        </table>
+    </div>
+</script>
+<script type="text/template" id="RAmanagement">
+    <div class="col-md-12 Overall_date">
+        <input class="inputbtn fr" type="button" value="新增入库" />
+    </div>
+    <div class="row data">
+        <table class="table table-bordered ">
+            <tr>
+                <th>序号</th>
+                <th>所属角色</th>
+                <th>关联数</th>
+                <th>新增时间</th>
+                <th>操作</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>仓库管理员</td>
+                <td>10</td>
+                <td>2018/07/30 12：00</td>
+                <td>
+                    <span>查看</span>|
+                    <span>编辑</span>|
+                    <span>操作</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</script>
+<script type="text/template" id="JAmanagement">
+    <div class="row Jurisdiction" >
+        <span>通用的数据权限和功能权限功能设置</span>
+    </div>
+</script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row ">
+            <div class="col-md-12 bg-success title">
+                <span>RFID监控系统</span>
+            </div>
+            <div class="col-md-2">
+                <ul class="list-group">
+                    <li class="list-group-item li0 Btnblue">首页</li>
+                    <li class="list-group-item subject">监控管理</li>
+                    <li class="list-group-item li1">实时监控</li>
+                    <li class="list-group-item li2">历史监控</li>
+                    <li class="list-group-item subject">物品管理</li>
+                    <li class="list-group-item li3">条码信息</li>
+                    <li class="list-group-item li4">物品出库</li>
+                    <li class="list-group-item li5">物品入库</li>
+                    <li class="list-group-item li6">仓库信息</li>
+                    <li class="list-group-item subject">数据统计</li>
+                    <li class="list-group-item li7">物品统计</li>
+                    <li class="list-group-item li8">出库统计</li>
+                    <li class="list-group-item li9">入库统计</li>
+                    <li class="list-group-item li10">报警统计</li>
+                    <li class="list-group-item subject">系统管理</li>
+                    <li class="list-group-item li11">信息推送</li>
+                    <li class="list-group-item li12">账号管理</li>
+                    <li class="list-group-item li13">角色管理</li>
+                    <li class="list-group-item li14">权限管理</li>
+                </ul>
+            </div>
+            <div class="col-md-10 yemain">
+               
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

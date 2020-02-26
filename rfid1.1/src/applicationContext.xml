@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<!-- 配置注解扫描包 -->
+	<context:component-scan base-package="com.bulb.rfid"/>
+
+	<!-- 导入properties文件 -->
+	<context:property-placeholder location="classpath:*.properties"/>
+	
+	<!-- 连接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+	</bean>
+	
+	<!-- =============================  redis  ==================================== -->
+	<!-- 配置redis连接池 -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="${redis.maxIdle}"></property>
+		<property name="minIdle" value="${redis.minIdle}"></property>
+		<property name="maxTotal" value="${redis.maxTotal}"></property>
+	</bean>
+	
+	<!-- 配置redis连接工厂 -->
+	<bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.hostName}"></property>
+		<property name="port" value="${redis.port}"></property>
+		<property name="timeout" value="${redis.timeout}"></property>
+		<property name="usePool" value="${redis.usePool}"></property>
+		<property name="poolConfig" ref="poolConfig"></property>
+	</bean>
+	
+	<!-- 配置redis模板 -->
+	<bean id="jedisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		 <property name="connectionFactory" ref="jedisConnectionFactory"></property> 
+		 <property name="keySerializer"> 
+		 	<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/> 
+		 </property> 
+		 <property name="hashKeySerializer"> 
+		 	<bean class="org.springframework.data.redis.serializer.StringRedisSerializer"/> 
+		 </property> 
+		 <property name="valueSerializer"> 
+		 	<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/> 
+		 </property> 
+		 <property name="hashValueSerializer"> 
+		 	<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"/> 
+		 </property> 
+		 <property name="enableTransactionSupport" value="true"></property>
+	</bean>
+	<!-- =============================  redis  ==================================== -->
+	
+	<!-- 配置session工厂 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:sqlMapConfig.xml"/>
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 配置Mapper动态代理扫描包方式 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.bulb.rfid.dao"/>
+	</bean>
+	
+	<!-- 开启事务 -->
+	
+	<!-- 配置核心事务管理器 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+   		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 开启使用注解AOP事务 -->
+	<tx:annotation-driven transaction-manager="txManager" />
+</beans>

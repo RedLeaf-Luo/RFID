@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bulb.rfid.dao.ExportMapper" >
+
+	<!-- 根据查询条件查询出库记录 -->
+	<select id="selectExportByQueryVo" parameterType="QueryVo" resultMap="BaseResultMap">
+  		select * from export 
+  		<where>
+  			<if test="rfidId !=null and rfidId !=''">
+				rfid_id like "%"#{rfidId}"%"
+			</if>
+			<if test="wareHouseName !=null and wareHouseName !=''">
+				and ware_house_name = #{wareHouseName}
+			</if>
+			<if test="beginTime != null and beginTime !=''">
+				and export_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime !=''">
+				and export_time &lt;= #{endTime}
+			</if>
+  		</where>
+			order by export_time desc
+  	</select>
+	
+	<!-- 查询所有出库记录   -->
+	<select id="selectAllExport" resultMap="BaseResultMap">
+  		select * from export 
+			order by export_time desc
+  	</select>
+	
+	<!-- 获取全部录入数 -->
+	 <select id="selectAllCount" resultType="Integer">
+	 	select count(1) from export
+	 </select>
+	 
+	<!-- 获取本月录入数 -->
+	 <select id="selectMonthCount" resultType="Integer">
+	 	select count(1) from export
+			where date_format(export_time,'%Y-%m')=date_format(now(),'%Y-%m')
+	 </select>
+
+	<!-- 获取本周录入数 -->
+	 <select id="selectWeekCount" resultType="Integer">
+	 	select count(1) from export 
+			where YEARWEEK(date_format(export_time,'%Y-%m-%d')) = YEARWEEK(now())
+	 </select>
+	
+	<!-- 获取当日录入数 -->
+	 <select id="selectTodayCount" resultType="Integer">
+	 	select count(1) from export 
+			where to_days(export_time) = to_days(now())
+	 </select>
+	
+	<!-- 统计当天 -->
+  <select id="countExportToday" resultType="Integer">
+  	select count(*) from export where to_days(export_time) = to_days(now());
+  </select>
+  
+  <!-- 统计昨天 -->
+  <select id="countExportYesterday" resultType="Integer">
+  	select count(1) from export where to_days(export_time) = to_days(now())-1;
+  </select>
+  
+  <!-- 统计前天 -->
+  <select id="countExportTwo" resultType="Integer">
+  		select count(1) from export where to_days(export_time) = to_days(now())-2;
+  </select>
+  
+  <!-- 统计前3天 -->
+  <select id="countExportThree" resultType="Integer">
+  		select count(1) from export where to_days(export_time) = to_days(now())-3;
+  </select>
+  
+  <!-- 统计前4天 -->
+  <select id="countExportFour" resultType="Integer">
+  		select count(1) from export where to_days(export_time) = to_days(now())-4;
+  </select>
+  
+  <!-- 统计前5天 -->
+  <select id="countExportFive" resultType="Integer">
+  		select count(1) from export where to_days(export_time) = to_days(now())-5;
+  </select>
+  
+  <!-- 统计前6天 -->
+  <select id="countExportSix" resultType="Integer">
+  		select count(1) from export where to_days(export_time) = to_days(now())-6;
+  </select>
+
+  <resultMap id="BaseResultMap" type="com.bulb.rfid.entity.Export" >
+    <id column="export_id" property="exportId" jdbcType="INTEGER" />
+    <result column="rfid_id" property="rfidId" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="goods_id" property="goodsId" jdbcType="VARCHAR" />
+    <result column="goods_name" property="goodsName" jdbcType="VARCHAR" />
+    <result column="ware_house_name" property="wareHouseName" jdbcType="VARCHAR" />
+    <result column="export_time" property="exportTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause" >
+    <where >
+      <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    export_id, rfid_id, user_id, user_name, goods_id, goods_name, ware_house_name, export_time
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.bulb.rfid.entity.ExportExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from export
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    order by export_time desc
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from export
+    where export_id = #{exportId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from export
+    where export_id = #{exportId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.bulb.rfid.entity.ExportExample" >
+    delete from export
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.bulb.rfid.entity.Export" >
+    insert into export (export_id, rfid_id, user_id, 
+      user_name, goods_id, goods_name, 
+      ware_house_name, export_time)
+    values (#{exportId,jdbcType=INTEGER}, #{rfidId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{userName,jdbcType=VARCHAR}, #{goodsId,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, 
+      #{wareHouseName,jdbcType=VARCHAR}, #{exportTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bulb.rfid.entity.Export" >
+    insert into export
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="exportId != null" >
+        export_id,
+      </if>
+      <if test="rfidId != null" >
+        rfid_id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="goodsId != null" >
+        goods_id,
+      </if>
+      <if test="goodsName != null" >
+        goods_name,
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name,
+      </if>
+      <if test="exportTime != null" >
+        export_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="exportId != null" >
+        #{exportId,jdbcType=INTEGER},
+      </if>
+      <if test="rfidId != null" >
+        #{rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null" >
+        #{goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsName != null" >
+        #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="exportTime != null" >
+        #{exportTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.bulb.rfid.entity.ExportExample" resultType="java.lang.Integer" >
+    select count(*) from export
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map" >
+    update export
+    <set >
+      <if test="record.exportId != null" >
+        export_id = #{record.exportId,jdbcType=INTEGER},
+      </if>
+      <if test="record.rfidId != null" >
+        rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userId != null" >
+        user_id = #{record.userId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.userName != null" >
+        user_name = #{record.userName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsId != null" >
+        goods_id = #{record.goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="record.goodsName != null" >
+        goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.wareHouseName != null" >
+        ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.exportTime != null" >
+        export_time = #{record.exportTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map" >
+    update export
+    set export_id = #{record.exportId,jdbcType=INTEGER},
+      rfid_id = #{record.rfidId,jdbcType=VARCHAR},
+      user_id = #{record.userId,jdbcType=VARCHAR},
+      user_name = #{record.userName,jdbcType=VARCHAR},
+      goods_id = #{record.goodsId,jdbcType=VARCHAR},
+      goods_name = #{record.goodsName,jdbcType=VARCHAR},
+      ware_house_name = #{record.wareHouseName,jdbcType=VARCHAR},
+      export_time = #{record.exportTime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null" >
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bulb.rfid.entity.Export" >
+    update export
+    <set >
+      <if test="rfidId != null" >
+        rfid_id = #{rfidId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null" >
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsId != null" >
+        goods_id = #{goodsId,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsName != null" >
+        goods_name = #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="wareHouseName != null" >
+        ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      </if>
+      <if test="exportTime != null" >
+        export_time = #{exportTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where export_id = #{exportId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bulb.rfid.entity.Export" >
+    update export
+    set rfid_id = #{rfidId,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      user_name = #{userName,jdbcType=VARCHAR},
+      goods_id = #{goodsId,jdbcType=VARCHAR},
+      goods_name = #{goodsName,jdbcType=VARCHAR},
+      ware_house_name = #{wareHouseName,jdbcType=VARCHAR},
+      export_time = #{exportTime,jdbcType=TIMESTAMP}
+    where export_id = #{exportId,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 根据条件查询 -->
+  	<select id="selectExportListByQueryVo" parameterType="QueryVo" resultMap="BaseResultMap" >
+  		select * from export
+  		<where>
+  			<if test="rfidId!=null and rfidId!=''">
+				rfid_id like "%"#{rfidId}"%"
+  			</if>
+  			<if test="wareHouseName!=null and wareHouseName!=''">
+  				and ware_house_name like "%"#{wareHouseName}"%"
+  			</if>
+  			<if test="beginTime != null and beginTime !=''">
+				and export_time &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime !=''">
+				and export_time &lt;= #{endTime}
+			</if>
+  		</where>
+  		order by export_time desc
+  	</select>
+  	
+  	
+  	
+<!--   	根据userid查询userphone -->
+<!-- 根据exportId查询export信息，再根据userId查询user表中的电话号码 -->
+     <select id="selectUserPhoneByUserId" parameterType="String" resultType="String">
+     	select u.user_phone from user u
+     	where u.user_id=#{userId}
+     </select>
+<!--      根据仓库名字查询user表中的仓库负责人username -->
+	 <select id="selectUserNameByWareHouseName" parameterType="String" resultType="String">
+	 	select u.user_name from 
+	 		ware_house w,
+	 		user_ware_house uw,
+	 		user u
+	 	where w.ware_house_id = uw.ware_house_id
+	 		and uw.user_id=u.user_id
+	 		and w.ware_house_name = #{wareHouseName}
+	 </select>
+</mapper>

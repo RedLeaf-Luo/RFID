@@ -1,0 +1,197 @@
+[class*="col-"] {
+    padding: 0;
+    margin: 0;
+}
+.fr {
+    float: right;
+}
+/*主页*/
+/*标题*/
+.row {
+    margin: 0;
+}
+
+.title {
+    height: 50px;
+    background-color: #5fb878;
+}
+
+.title span {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 50px;
+    color: white;
+    padding-left: 80px;
+}
+
+/*导航*/
+.list-group-item {
+    text-align: center;
+    cursor: pointer;
+}
+
+.list-group .subject {
+    cursor: default;
+    color: white;
+    background-color: #5fb878;
+}
+.list-group .subject:hover {
+    color: white;
+}
+.list-group-item:hover {
+    color: #5fb878;
+}
+.Btnblue {
+    color: #5fb878;
+    font-weight: 600;
+}
+/*边框数据*/
+.border {
+    margin-top: 50px;
+    height: 100px;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.border span:nth-child(1) {
+    font-size: 40px;
+    font-weight: 500;
+}
+
+.border span:nth-child(2) {
+    font-size: 15px;
+}
+
+
+/*表格数据*/
+.data {
+    margin-left: 1px;
+    padding-top: 40px;
+}
+
+table tr:nth-child(odd) {
+    background-color: rgb(230, 230, 230);
+}
+
+.data th {
+    text-align: center;
+}
+
+.data td {
+    text-align: center;
+}
+
+.data .tdbtn {
+    cursor: pointer;
+    color: #5fb878;
+    font-size: 15px;
+}
+
+
+/* 取消顶部top */
+.DeletTop {
+    padding-top: 0;
+}
+/* 页面顶部 */
+.Overall_date {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.Overall_date .date_header {
+    width: 1500px;
+}
+.Overall_date  span {
+    margin-left: 10%;
+}
+.Overall_date .inputbtn {
+    width: 80px;
+    height: 26px;
+    background-color: #5fb878;
+    border: none;
+    margin-left: 20px;
+    color: white;
+}
+.Overall_date .search {
+    width: 26px;
+    height: 26px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+/*页面顶部日期格式*/
+.date_header .input-append {
+    margin-right: 20px;
+}
+
+.date_header .form-control {
+    height: 26px;
+}
+/*页面管理权限*/
+.Jurisdiction {
+    margin: 80px 0 0 80px;
+}
+.Jurisdiction span {
+    font-size: 50px;
+}
+/*详情页*/
+.yemain .Detailed {
+    margin: 50px 0 0 5px;
+}
+.yemain .Detailed .nav-tabs {
+    margin-bottom: 50px;
+}
+.yemain .Detailed .nav-tabs  li {
+    width: 200px;
+    font-size: 30px;
+    text-align: center;
+}
+/* 左边详情页 */
+.yemain .data .Detailed_Left {
+    display: flex;
+    padding-left: 50px;
+}
+.yemain .data .Detailed_Left .left_Title,.left_data {
+    display: flex;
+    flex-direction: column;
+    
+}
+.yemain .data .Detailed_Left .left_Title span {
+    width: 100px;
+    height: 50px;
+    font-size: 15px;
+}
+.yemain .data .Detailed_Left .left_data span {
+    width: 100px;
+    height: 50px;
+    font-size: 14px;
+    color: #666666;
+}
+.yemain .Detailed .Detailed_Left .left_data .long{
+    width: 320px;
+}
+/* 右边距 */
+.pr {
+    padding-right: 30px;
+}
+/* 去掉模态框顶部border-botton */
+.modal-header {
+    border-bottom: 0;
+}
+/* 模态框 */
+.DditModel {
+    display: flex;
+    margin-bottom: 15px;;
+}
+.DditModel span {
+    line-height: 26px;
+    width: 100px;
+}
+/* 模态框字体灰色定义 */
+.DditModel .gray {
+    color: gray;
+    font-size: 10px;
+    padding-left: 10px;
+    width: 200px;
+}
